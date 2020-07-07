@@ -39,6 +39,8 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from .buffer import Buffer
 
+import oqs
+
 binding = Binding()
 binding.init_static_locks()
 ffi = binding.ffi
@@ -383,6 +385,9 @@ class PskKeyExchangeMode(IntEnum):
 
 
 class SignatureAlgorithm(IntEnum):
+    #PQ
+    DILITHIUM_2 = 0x04EC
+    ##
     ECDSA_SECP256R1_SHA256 = 0x0403
     ECDSA_SECP384R1_SHA384 = 0x0503
     ECDSA_SECP521R1_SHA512 = 0x0603
@@ -1050,6 +1055,8 @@ SIGNATURE_ALGORITHMS: Dict = {
     SignatureAlgorithm.RSA_PSS_RSAE_SHA256: (padding.PSS, hashes.SHA256),
     SignatureAlgorithm.RSA_PSS_RSAE_SHA384: (padding.PSS, hashes.SHA384),
     SignatureAlgorithm.RSA_PSS_RSAE_SHA512: (padding.PSS, hashes.SHA512),
+    ##inserting oqs sigs 
+    SignatureAlgorithm.DILITHIUM_2: (None,hashes.SHA3_512)
 }
 
 GROUP_TO_CURVE: Dict = {
