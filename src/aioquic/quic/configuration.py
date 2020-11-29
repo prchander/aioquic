@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from os import PathLike
+from re import split
 from typing import Any, List, Optional, TextIO, Union
 
 from ..tls import (
@@ -86,6 +87,9 @@ class QuicConfiguration:
     quantum_readiness_test: bool = False
     supported_versions: List[int] = field(
         default_factory=lambda: [
+            QuicProtocolVersion.DRAFT_32,
+            QuicProtocolVersion.DRAFT_31,
+            QuicProtocolVersion.DRAFT_30,
             QuicProtocolVersion.DRAFT_29,
             QuicProtocolVersion.DRAFT_28,
             QuicProtocolVersion.DRAFT_27,
@@ -103,7 +107,12 @@ class QuicConfiguration:
         Load a private key and the corresponding certificate.
         """
         with open(certfile, "rb") as fp:
-            certificates = load_pem_x509_certificates(fp.read())
+            boundary = b"-----BEGIN PRIVATE KEY-----\n"
+            chunks = split(b"\n" + boundary, fp.read())
+            certificates = load_pem_x509_certificates(chunks[0])
+            if len(chunks) == 2:
+                private_key = boundary + chunks[1]
+                self.private_key = load_pem_private_key(private_key)
         self.certificate = certificates[0]
         self.certificate_chain = certificates[1:]
 
